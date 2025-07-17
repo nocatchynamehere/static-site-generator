@@ -3,23 +3,29 @@ from textnode import TextNode, TextType, Enum, text_node_to_html_node
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
-        node = TextNode("This is a text node", TextType.BOLD)
-        node2 = TextNode("This is a text node", TextType.BOLD)
-        node3 = TextNode("This is a text node", TextType.ITALIC)
-        node4 = TextNode("This is a text node", TextType.BOLD, "boot.dev/dashboard")
-        node5 = TextNode("This is a text node", TextType.BOLD, "boot.dev/courses")
-        node6 = TextNode("This is a text node", TextType.ITALIC)
-        node7 = TextNode("This is a text node", TextType.BOLD, "boot.dev/dashboard")
-        node8 = TextNode("This is a different text node", TextType.BOLD)
+        node_base = TextNode("This is a text node", TextType.BOLD)
+        node_same = TextNode("This is a text node", TextType.BOLD)
+        node_diff_type = TextNode("This is a text node", TextType.ITALIC)
+        node_with_url = TextNode("This is a text node", TextType.BOLD, "boot.dev/dashboard")
+        node_with_different_url = TextNode("This is a text node", TextType.BOLD, "boot.dev/courses")
+        node_diff_text = TextNode("This is a different text node", TextType.BOLD)
 
+        tests = [
+            (node_base, node_same, True, "Same text and type"),
+            (node_diff_type, TextNode("This is a text node", TextType.ITALIC), True, "Same text and type (ITALIC)"),
+            (node_base, node_diff_type, False, "Different types"),
+            (node_base, node_with_url, False, "One has URL, one doesn't"),
+            (node_with_url, node_with_different_url, False, "Different URLs"),
+            (node_base, node_diff_text, False, "Different text"),
+            (node_with_url, TextNode("This is a text node", TextType.BOLD, "boot.dev/dashboard"), True, "Same everything including URL"),
+        ]
 
-        self.assertEqual(node, node2)
-        self.assertEqual(node3, node6)
-        self.assertNotEqual(node, node3)
-        self.assertNotEqual(node4, node)
-        self.assertNotEqual(node4, node5)
-        self.assertNotEqual(node, node8)
-        self.assertEqual(node4, node7)
+        for a, b, expected, label in tests:
+            with self.subTest(label=label):
+                if expected:
+                    self.assertEqual(a, b)
+                else:
+                    self.assertNotEqual(a, b)
 
 class TestTextNodeToHtmlNode(unittest.TestCase):
     def test_text_type_text(self):
